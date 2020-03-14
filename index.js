@@ -26,10 +26,10 @@
   };
 
   /**
-   * Paddel constructor
+   * Paddle constructor
    * @param {string} position Accepts left or right 
    */
-  function Paddel(position) {
+  function Paddle(position) {
     this.color = "white";
     this.size = {
       x: 15,
@@ -102,8 +102,8 @@
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     Draw(context, game.ball.color, game.ball.position, game.ball.size)
-    Draw(context, game.playerPaddel, game.playerPaddel.position, game.playerPaddel.size)
-    Draw(context, game.computerPaddel, game.computerPaddel.position, game.computerPaddel.size)
+    Draw(context, game.playerPaddle, game.playerPaddle.position, game.playerPaddle.size)
+    Draw(context, game.computerPaddle, game.computerPaddle.position, game.computerPaddle.size)
   };
 
 
@@ -134,8 +134,8 @@
    */
   function Game (speed) {
     this.ball = new Ball();
-    this.playerPaddel = new Paddel("left");
-    this.computerPaddel = new Paddel("right");
+    this.playerPaddle = new Paddle("left");
+    this.computerPaddle = new Paddle("right");
     this.framesPerSecond = speed;
   };
   
@@ -164,7 +164,7 @@
     const game = new Game(gameSpeed);
     canvas.addEventListener('mousemove', evt => {
       const mousePos = CalculateMousePosition(evt);
-      game.playerPaddel.position.y = mousePos.y;
+      game.playerPaddle.position.y = mousePos.y;
     })
     game.play(context);
   };
