@@ -72,6 +72,18 @@
     }
   };
 
+  const CalculateMousePosition = evt => {
+    const rect = canvas.getBoundingClientRect();
+    const root = document.documentElement;
+    const mouseX = evt.clientX - rect.left - root.scrollLeft;
+    const mouseY = evt.clientY - rect.top - root.scrollTop;
+
+    return {
+      x: mouseX,
+      y: mouseY
+    }
+  };
+
   /**
    * 
    * @param {object} game 
@@ -93,6 +105,7 @@
     Draw(context, game.playerPaddel, game.playerPaddel.position, game.playerPaddel.size)
     Draw(context, game.computerPaddel, game.computerPaddel.position, game.computerPaddel.size)
   };
+
 
   /**
    * Check if ball has moved outside of canvas boundaries
@@ -145,9 +158,14 @@
    */
   const StartGame = (gameSpeed) => {
     
+    
     // set game speed
     let level = 1;
     const game = new Game(gameSpeed);
+    canvas.addEventListener('mousemove', evt => {
+      const mousePos = CalculateMousePosition(evt);
+      game.playerPaddel.position.y = mousePos.y;
+    })
     game.play(context);
   };
   
@@ -161,6 +179,8 @@
     //   StartGame(gameSpeed)
     // }
   });
+
+
   
   StartGame(gameSpeed);
 
