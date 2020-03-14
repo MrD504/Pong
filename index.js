@@ -7,61 +7,64 @@
   let playerScore = 0;
   let computerScore = 0;
 
-
+  class ObjXY {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+    }
+  }
 
   /**
-   * Ball Constructor
+   * Create instance of a ball
    */
-  function Ball() {
-    this.color = "white";
-    this.size = {
-      x: 10,
-      y: 10
+  class Ball {
+    constructor() {
+      this.color = "white";
+      this.size = new ObjXY(10,10);
+      this.position = new ObjXY(
+        (canvas.width / 2) - (this.size.x / 2),
+        (canvas.height / 2) - (this.size.y / 2)
+      );
+      this.velocityX = -10;
+      this.velocityY = 10;
     };
-    this.position = {
-      x: (canvas.width / 2) - (this.size.x / 2),
-      y: (canvas.height / 2) - (this.size.y / 2)
-    };
-    this.velocityX = -10;
-    this.velocityY = 10;
-  };
 
-  Ball.prototype.calculatePosition = function () {
-    this.position.x = this.position.x + this.velocityX;
-    this.position.y = this.position.y + this.velocityY;
-  };
+    calculatePosition = () => {
+      this.position.x = this.position.x + this.velocityX;
+      this.position.y = this.position.y + this.velocityY;
+    }
+  }
 
   /**
    * Paddle constructor
    * @param {string} position Accepts left or right 
+   * @param {number}}paddleSpeed speed at which paddle can react
    */
-  function Paddle(position, paddleSpeed) {
-    this.color = "white";
-    this.size = {
-      x: 15,
-      y: 80
-    };
-    this.position = {
-      x: position === "left" ? 10 : canvas.width - 25,
-      y: canvas.height / 2
-    };
-    this.speed = paddleSpeed
-  };
-
-  /**
-   * @param {object} ball
-   */
-  Paddle.prototype.HandleComputerMovement = function (ball) {
-    const topOfPaddle = this.position.y;
-    const bottomOfPaddle = this.position.y + this.size.y;
-
-    if (topOfPaddle > ball.position.y && bottomOfPaddle > ball.position.y) {
-      this.position.y = this.position.y - this.speed
-    } else if (topOfPaddle < ball.position.y && bottomOfPaddle < ball.position.y) {
-      this.position.y = this.position.y + this.speed
+  class Paddle {
+    constructor(position, paddleSpeed) {
+      this.color = "white";
+      this.size = new ObjXY(15, 80);
+      this.position = new ObjXY(
+        (position === "left" ? 10 : canvas.width - 25),
+        (canvas.height / 2)
+      );
+      this.speed = paddleSpeed;
     }
 
-  }
+    /**
+     * @param {object} ball
+     */
+    HandleComputerMovement = (ball) => {
+      const topOfPaddle = this.position.y;
+      const bottomOfPaddle = this.position.y + this.size.y;
+    
+      if (topOfPaddle > ball.position.y && bottomOfPaddle > ball.position.y) {
+        this.position.y = this.position.y - this.speed
+      } else if (topOfPaddle < ball.position.y && bottomOfPaddle < ball.position.y) {
+        this.position.y = this.position.y + this.speed
+      }
+    }
+  };
 
   /**
    * 
@@ -81,15 +84,9 @@
    * @param {Object} size - Shape {x: #, y: #}
    */
   const Draw = (context, color, position, size) => {
-    // check that x and y keys exist on position and size objects
-    if (hasXY(position) && hasXY(size)) {
-
-      // draw canvas
-      context.fillStyle = color;
-      context.fillRect(position.x, position.y, size.x, size.y);
-    } else {
-      console.error('Incorrect params for position or size objects')
-    }
+    // draw canvas
+    context.fillStyle = color;
+    context.fillRect(position.x, position.y, size.x, size.y);
   };
 
   const PrintScores = (context, score, x, y) => {
@@ -213,29 +210,30 @@
    * Game Constructor
    * @param {number} speed 
    */
-  function Game(speed) {
-    this.ball = new Ball();
-    this.playerPaddle = new Paddle("left");
-    this.computerPaddle = new Paddle("right", computerPaddleSpeed);
-    this.framesPerSecond = speed;
-  };
+  class Game {
+      constructor (speed) {
+      this.ball = new Ball();
+      this.playerPaddle = new Paddle("left");
+      this.computerPaddle = new Paddle("right", computerPaddleSpeed);
+      this.framesPerSecond = speed;
+    };
 
-  Game.prototype.play = function (context) {
-    // context.clearRect(0, 0, canvas.width, canvas.height);
-    const startTimer = setInterval(() => {
-      clearInterval(startTimer);
-      const timer = setInterval(() => {
-
-        MoveSprites(this);
-        DrawEverything(context, this);
-        CheckWinLoseConditions(this, timer);
-      }, 1000 / this.framesPerSecond)
-    }, 1000)
-  };
-
-  Game.prototype.end = function () {
-    const event = new CustomEvent('end', {})
-    dispatchEvent(event);
+    play = (context) => {
+      const startTimer = setInterval(() => {
+        clearInterval(startTimer);
+        const timer = setInterval(() => {
+    
+          MoveSprites(this);
+          DrawEverything(context, this);
+          CheckWinLoseConditions(this, timer);
+        }, 1000 / this.framesPerSecond)
+      }, 1000)
+    }
+    
+    end =  () => {
+      const event = new CustomEvent('end', {})
+      dispatchEvent(event);
+    };
   };
 
   /**
@@ -271,8 +269,6 @@
       StartGame(gameSpeed)
     }
   });
-
-
 
   StartGame(gameSpeed);
 
