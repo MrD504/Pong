@@ -16,11 +16,13 @@
       x: 0,
       y: (canvas.height / 2) - (this.size.y / 2)
     };
-    this.velocity = 10;
+    this.velocityX = 10;
+    this.velocityY = 10;
   };
 
   Ball.prototype.calculatePosition = function() {
-    this.position.x = this.position.x + this.velocity;
+    this.position.x = this.position.x + this.velocityX;
+    this.position.y = this.position.y + this.velocityY;
   };
 
   /**
@@ -101,9 +103,15 @@
     if(game.ball.position.x > canvas.width) {
       // clearInterval(timer);
       // game.end();
-      game.ball.velocity = -game.ball.velocity;
+      game.ball.velocityX = -game.ball.velocityX;
     } else if(game.ball.position.x < 0) {
-      game.ball.velocity = Math.abs(game.ball.velocity)
+      game.ball.velocityX = Math.abs(game.ball.velocityX)
+    }
+    
+    if(game.ball.position.y > canvas.height) {
+      game.ball.velocityY = -game.ball.velocityY;
+    } else if(game.ball.position.y < 0) {
+      game.ball.velocityY = Math.abs(game.ball.velocityY)
     }
   }
 
