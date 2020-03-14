@@ -3,8 +3,11 @@
   const context = canvas.getContext('2d');
   let gameSpeed = 30;
   let computerPaddleSpeed = 5;
+  const MAX_SCORE = 3;
   let playerScore = 0;
   let computerScore = 0;
+
+
 
   /**
    * Ball Constructor
@@ -183,25 +186,26 @@
       }
 
       // if game is won delete self and prompt for new game
-      if (computerScore === 10 || playerScore === 10) {
+      if (computerScore === MAX_SCORE || playerScore === MAX_SCORE) {
+        clearInterval(timer);
+        window.removeEventListener("mousemove", null)
+        delete (game.ball)
+        delete (game.playerPaddle);
+        delete (game.computerPaddle);
         game.end(game)
+        return;
       }
     }
 
-    // if ball hits player paddle or computer paddle reverse direction
+    // handle end of game exception
+    if (game.ball) {
 
-    // clearInterval(timer);
-    // game.end();
-    // if(){
-    //   // game.ball.velocityX = -game.ball.velocityX;
-    // } else if(game.ball.position.x < 0) {
-    //   game.ball.velocityX = Math.abs(game.ball.velocityX)
-    // }
-
-    if (game.ball.position.y > canvas.height) {
-      game.ball.velocityY = -game.ball.velocityY;
-    } else if (game.ball.position.y < 0) {
-      game.ball.velocityY = Math.abs(game.ball.velocityY)
+      // if ball hits player paddle or computer paddle reverse direction
+      if (game.ball.position.y > canvas.height) {
+        game.ball.velocityY = -game.ball.velocityY;
+      } else if (game.ball.position.y < 0) {
+        game.ball.velocityY = Math.abs(game.ball.velocityY)
+      }
     }
   }
 
@@ -219,20 +223,19 @@
   Game.prototype.play = function (context) {
     // context.clearRect(0, 0, canvas.width, canvas.height);
     const startTimer = setInterval(() => {
-        clearInterval(startTimer);
-        const timer = setInterval(() => {
-          
-          MoveSprites(this);
-          DrawEverything(context, this);
-          CheckWinLoseConditions(this, timer);
-        }, 1000 / this.framesPerSecond)
+      clearInterval(startTimer);
+      const timer = setInterval(() => {
+
+        MoveSprites(this);
+        DrawEverything(context, this);
+        CheckWinLoseConditions(this, timer);
+      }, 1000 / this.framesPerSecond)
     }, 1000)
   };
 
-  Game.prototype.end = function (game) {
+  Game.prototype.end = function () {
     const event = new CustomEvent('end', {})
     dispatchEvent(event);
-    game = null;
   };
 
   /**
@@ -246,7 +249,11 @@
     const game = new Game(gameSpeed);
     canvas.addEventListener('mousemove', evt => {
       const mousePos = CalculateMousePosition(evt);
-      game.playerPaddle.position.y = mousePos.y - (game.playerPaddle.size.y / 2);
+
+      // handle end of game exception
+      if (game.playerPaddle) {
+        game.playerPaddle.position.y = mousePos.y - (game.playerPaddle.size.y / 2);
+      }
     })
     game.play(context);
   };
@@ -256,13 +263,13 @@
     const answer = confirm('Play Again');
 
     // // if yes start new game but faster and increment level
-    // if (answer) {
-    //   playerScore = 0;
-    //   computerScore = 0;
-    //   gameSpeed += 5;
-    //   computerPaddleSpeed += 5;
-    //   StartGame(gameSpeed)
-    // }
+    if (answer) {
+      playerScore = 0;
+      computerScore = 0;
+      gameSpeed += 5;
+      computerPaddleSpeed += 5;
+      StartGame(gameSpeed)
+    }
   });
 
 
