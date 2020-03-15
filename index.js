@@ -34,10 +34,10 @@
     calculateVelocityY = (paddle) => {
       const MAX_VELOCITY = this.velocityX * 1.25; // cap the speed of the ball
       const deltaY = (this.position.y - (paddle.position.y + paddle.size.y / 2)) * 0.15;
-      if (Math.abs(deltaY) > MAX_VELOCITY && this.velocityY < 0) {
-        this.velocityY = -MAX_VELOCITY
-      } else if (Math.abs(deltaY) > MAX_VELOCITY && this.velocityY > 0) {
+      if (Math.abs(deltaY) < MAX_VELOCITY && this.velocityY < 0) {
         this.velocityY = MAX_VELOCITY
+      } else if (Math.abs(deltaY) > MAX_VELOCITY && this.velocityY > 0) {
+        this.velocityY = -MAX_VELOCITY
       } else {
         this.velocityY = deltaY;
       }
@@ -155,9 +155,11 @@
    * @returns {boolean}
    */
   const CheckBallHitPaddle = (game, paddle) => {
+    // add 5 to either side of the paddle for cleaner hits
+
     return (
-      game.ball.position.y > game[paddle].position.y &&
-      game.ball.position.y < (game[paddle].position.y + game[paddle].size.y));
+      game.ball.position.y > (game[paddle].position.y - 5) &&
+      game.ball.position.y < (game[paddle].position.y + game[paddle].size.y) + 5);
   };
 
   /**
