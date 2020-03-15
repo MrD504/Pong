@@ -22,11 +22,11 @@
         (canvas.width / 2) - (this.size.x / 2),
         (canvas.height / 2) - (this.size.y / 2)
       );
-      this.velocityX = -10;
-      this.velocityY = 10;
+      this.velocityX = -15;
+      this.velocityY = 0;
     };
 
-    calculatePosition = () => {
+    calculateNextPosition = () => {
       this.position.x = this.position.x + this.velocityX;
       this.position.y = this.position.y + this.velocityY;
     }
@@ -51,7 +51,7 @@
     /**
      * @param {object} ball
      */
-    HandleComputerMovement = (ball) => {
+    handleComputerMovement = (ball) => {
       const topOfPaddle = this.position.y;
       const bottomOfPaddle = this.position.y + this.size.y;
 
@@ -92,7 +92,7 @@
     context.fillText(score, x, y)
   }
 
-  const CalculateMousePosition = evt => {
+  const calculateMousePosition = evt => {
     const rect = canvas.getBoundingClientRect();
     const root = document.documentElement;
     const mouseX = evt.clientX - rect.left - root.scrollLeft;
@@ -109,8 +109,8 @@
    * @param {object} game 
    */
   const MoveSprites = (game) => {
-    game.ball.calculatePosition();
-    game.computerPaddle.HandleComputerMovement(game.ball);
+    game.ball.calculateNextPosition();
+    game.computerPaddle.handleComputerMovement(game.ball);
   };
 
   /**
@@ -136,6 +136,7 @@
     ball.position.x = canvas.width / 2 - (ball.size.x / 2);
     ball.position.y = canvas.height / 2 - (ball.size.y / 2);
     ball.velocityX = -ball.velocityX;
+    ball.velocityY = 0;
 
     // Reset computer paddle
     paddle.position.y = (canvas.height / 2) - (paddle.size.y / 2);
@@ -191,7 +192,10 @@
       if (game.ball.position.x > canvas.width - 15) {
         const didBallHitPaddle = CheckBallHitPaddle(game, "computerPaddle");
         if (didBallHitPaddle) {
+          const deltaY = game.ball.position.y - (game.playerPaddle.position.y + game.playerPaddle.size.y/2);
+          console.log(deltaY)
           game.ball.velocityX = -game.ball.velocityX;
+          game.ball.velocityY = deltaY * 0.15         
         } else {
           // Increment player score
           game.IncrementPlayerScore()
@@ -202,7 +206,10 @@
       if (game.ball.position.x < 15) {
         const didBallHitPaddle = CheckBallHitPaddle(game, "playerPaddle");
         if (didBallHitPaddle) {
+          const deltaY = game.ball.position.y - (game.playerPaddle.position.y + game.playerPaddle.size.y/2);
+
           game.ball.velocityX = -game.ball.velocityX;
+          game.ball.velocityY = deltaY * 0.15
         } else {
           game.IncrementComputerScore();
           Reset(game.ball, game.computerPaddle);
@@ -291,7 +298,7 @@
     let level = 1;
     const game = new Game(gameSpeed, cps);
     canvas.addEventListener('mousemove', evt => {
-      const mousePos = CalculateMousePosition(evt);
+      const mousePos = calculateMousePosition(evt);
 
       // handle end of game exception
       if (game.playerPaddle) {
@@ -309,7 +316,7 @@
     if (answer) {
       if (evt.detail) {
         gameSpeed += 5;
-        paddleSpeed += 1
+        paddleSpeed += 0.1
       }
       StartGame(gameSpeed, paddleSpeed)
     }
