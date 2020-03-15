@@ -51,7 +51,7 @@
     /**
      * @param {object} ball
      */
-    HandleComputerMovement = (ball) => {
+    handleComputerMovement = (ball) => {
       const topOfPaddle = this.position.y;
       const bottomOfPaddle = this.position.y + this.size.y;
 
