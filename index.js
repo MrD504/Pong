@@ -165,8 +165,8 @@
       PrintMsg(context, 'You Lose!', 350, 200);
 
       // force end to be on next tick
-      setTimeout(()=>{
-        game.end(game, false)
+      setTimeout(() => {
+        game.end(false)
         return;
       })
     }
@@ -177,7 +177,7 @@
 
       // force end to be on next tick
       setTimeout(() => {
-        game.end(game, true)
+        game.end(true)
         game.playerScore = 0;
         game.computerScore = 0;
         game.gameSpeed += 5;
@@ -186,29 +186,29 @@
       })
     }
 
-    if (game.ball.position.x > canvas.width - 15) {
-      const didBallHitPaddle = CheckBallHitPaddle(game, "computerPaddle");
-      if (didBallHitPaddle) {
-        game.ball.velocityX = -game.ball.velocityX;
-      } else {
-        // Increment player score
-        game.IncrementPlayerScore()
-        Reset(game.ball, game.computerPaddle);
-      }
-    }
-
-    if (game.ball.position.x < 15) {
-      const didBallHitPaddle = CheckBallHitPaddle(game, "playerPaddle");
-      if (didBallHitPaddle) {
-        game.ball.velocityX = -game.ball.velocityX;
-      } else {
-        game.IncrementComputerScore();
-        Reset(game.ball, game.computerPaddle);
-      }
-    }
-
-    // handle end of game exception
+      // handle end of game exception
     if (game.ball) {
+      if (game.ball.position.x > canvas.width - 15) {
+        const didBallHitPaddle = CheckBallHitPaddle(game, "computerPaddle");
+        if (didBallHitPaddle) {
+          game.ball.velocityX = -game.ball.velocityX;
+        } else {
+          // Increment player score
+          game.IncrementPlayerScore()
+          Reset(game.ball, game.computerPaddle);
+        }
+      }
+
+      if (game.ball.position.x < 15) {
+        const didBallHitPaddle = CheckBallHitPaddle(game, "playerPaddle");
+        if (didBallHitPaddle) {
+          game.ball.velocityX = -game.ball.velocityX;
+        } else {
+          game.IncrementComputerScore();
+          Reset(game.ball, game.computerPaddle);
+        }
+      }
+
 
       // if ball hits player paddle or computer paddle reverse direction
       if (game.ball.position.y > canvas.height) {
@@ -254,7 +254,7 @@
      */
     end = (win) => {
       const event = new CustomEvent('end', {
-        gameWon: win
+        detail: win
       })
       dispatchEvent(event);
     };
@@ -273,7 +273,7 @@
     destroy = (timer) => {
       clearInterval(timer);
       window.removeEventListener("mousemove", null);
-      delete(this)
+      delete (this)
       delete (this.ball)
       delete (this.playerPaddle);
       delete (this.computerPaddle);
@@ -304,10 +304,10 @@
   // Listen for end of game and ask user if they want to play again
   window.addEventListener('end', (evt) => {
     const answer = confirm('Play Again');
-
+    console.log(evt)
     // // if yes start new game but faster and increment level
     if (answer) {
-      if(evt.won) {
+      if (evt.detail) {
         gameSpeed += 5;
         paddleSpeed += 1
       }
