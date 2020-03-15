@@ -29,7 +29,21 @@
     calculateNextPosition = () => {
       this.position.x = this.position.x + this.velocityX;
       this.position.y = this.position.y + this.velocityY;
-    }
+    };
+
+    calculateVelocityY = (paddle) => {
+      const MAX_VELOCITY = this.velocityX * 1.25; // cap the speed of the ball
+      const deltaY = (this.position.y - (paddle.position.y + paddle.size.y / 2)) * 0.15;
+      console.log(deltaY)
+      if (Math.abs(deltaY) > MAX_VELOCITY && this.velocityY < 0) {
+        this.velocityY = -MAX_VELOCITY
+      } else if (Math.abs(deltaY) > MAX_VELOCITY && this.velocityY > 0) {
+        this.velocityY = MAX_VELOCITY
+      } else {
+        this.velocityY = deltaY;
+      }
+
+    };
   }
 
   /**
@@ -128,19 +142,10 @@
 
     PrintMsg(context, game.playerScore, 200, 100);
     PrintMsg(context, game.computerScore, 550, 100);
+    PrintMsg(context, `Level ${game.level}`, 350, 300);
   };
 
-  const Reset = (ball, paddle) => {
 
-    // Reset ball position and direction
-    ball.position.x = canvas.width / 2 - (ball.size.x / 2);
-    ball.position.y = canvas.height / 2 - (ball.size.y / 2);
-    ball.velocityX = -ball.velocityX;
-    ball.velocityY = 0;
-
-    // Reset computer paddle
-    paddle.position.y = (canvas.height / 2) - (paddle.size.y / 2);
-  };
 
   /**
    * 
@@ -173,46 +178,33 @@
     }
 
     if (game.playerScore === game.MAX_SCORE) {
-      game.destroy(timer);
-      PrintMsg(context, 'You Win!', 350, 200);
-
-      // force end to be on next tick
-      setTimeout(() => {
-        game.end(true)
-        game.playerScore = 0;
-        game.computerScore = 0;
-        game.gameSpeed += 5;
-        game.computerPaddleSpeed += 5;
-        return;
-      })
+      // PrintMsg(context, 'You Win!', 350, 200);
+      game.nextLevel()
     }
 
-      // handle end of game exception
+    // handle end of game exception
     if (game.ball) {
       if (game.ball.position.x > canvas.width - 15) {
         const didBallHitPaddle = CheckBallHitPaddle(game, "computerPaddle");
         if (didBallHitPaddle) {
-          const deltaY = game.ball.position.y - (game.playerPaddle.position.y + game.playerPaddle.size.y/2);
-          console.log(deltaY)
+
           game.ball.velocityX = -game.ball.velocityX;
-          game.ball.velocityY = deltaY * 0.15         
+          game.ball.calculateVelocityY(game.computerPaddle)
         } else {
           // Increment player score
           game.IncrementPlayerScore()
-          Reset(game.ball, game.computerPaddle);
+          game.Reset(game.ball, game.computerPaddle);
         }
       }
 
       if (game.ball.position.x < 15) {
         const didBallHitPaddle = CheckBallHitPaddle(game, "playerPaddle");
         if (didBallHitPaddle) {
-          const deltaY = game.ball.position.y - (game.playerPaddle.position.y + game.playerPaddle.size.y/2);
-
           game.ball.velocityX = -game.ball.velocityX;
-          game.ball.velocityY = deltaY * 0.15
+          game.ball.calculateVelocityY(game.playerPaddle)
         } else {
           game.IncrementComputerScore();
-          Reset(game.ball, game.computerPaddle);
+          game.Reset(game.ball, game.computerPaddle);
         }
       }
 
@@ -234,10 +226,12 @@
    */
   class Game {
     constructor(fps, computerPaddleSpeed) {
+      this.level = 1;
       this.ball = new Ball();
+      this.gameSpeed = fps;
       this.playerPaddle = new Paddle("left");
       this.computerPaddle = new Paddle("right", computerPaddleSpeed);
-      this.framesPerSecond = 1000 / fps;
+      this.framesPerSecond = 1000 / this.gameSpeed;
       this.computerPaddleSpeed = computerPaddleSpeed;
       this.MAX_SCORE = 3;
       this.playerScore = 0;
@@ -256,6 +250,14 @@
       }, 1000)
     }
 
+    nextLevel = () => {
+      this.level++;
+      this.playerScore = 0;
+      this.computerScore = 0;
+      this.gameSpeed += 5;
+      this.computerPaddleSpeed += 5;
+      this.Reset();
+    }
     /**
      * @param {boolean} win did player win
      */
@@ -272,7 +274,28 @@
 
     IncrementPlayerScore = () => {
       this.playerScore++;
-    }
+    };
+
+    Reset = (ball, paddle) => {
+
+      // Reset Level Number
+      this.level = 1;
+
+      // Reset Speeds
+      this.gameSpeed = gameSpeed;
+      this.computerPaddle.speed = paddleSpeed;
+      
+      // Reset ball position and direction
+      if (ball) {
+        ball.position.x = canvas.width / 2 - (ball.size.x / 2);
+        ball.position.y = canvas.height / 2 - (ball.size.y / 2);
+        ball.velocityX = -ball.velocityX;
+        ball.velocityY = 0;
+
+      }
+      // Reset computer paddle
+      // paddle.position.y = (canvas.height / 2) - (paddle.size.y / 2);
+    };
 
     /**
      * @param {function} timer
@@ -311,13 +334,8 @@
   // Listen for end of game and ask user if they want to play again
   window.addEventListener('end', (evt) => {
     const answer = confirm('Play Again');
-    console.log(evt)
-    // // if yes start new game but faster and increment level
+    // // if yes start new game
     if (answer) {
-      if (evt.detail) {
-        gameSpeed += 5;
-        paddleSpeed += 0.1
-      }
       StartGame(gameSpeed, paddleSpeed)
     }
   });
