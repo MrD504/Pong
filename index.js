@@ -67,10 +67,13 @@
     handleComputerMovement = (ball) => {
       const topOfPaddle = this.position.y;
       const bottomOfPaddle = this.position.y + this.size.y;
+      const middleOfPaddle = this.position.y + ((bottomOfPaddle - topOfPaddle) / 2)
 
-      if (topOfPaddle > ball.position.y && bottomOfPaddle > ball.position.y) {
+      // if (topOfPaddle > ball.position.y && bottomOfPaddle > ball.position.y) {
+      if(middleOfPaddle > (ball.position.y + 35)){  
         this.position.y = this.position.y - this.speed
-      } else if (topOfPaddle < ball.position.y && bottomOfPaddle < ball.position.y) {
+      // } else if (topOfPaddle < ball.position.y && bottomOfPaddle < ball.position.y) {
+      } else if (middleOfPaddle < (ball.position.y - 35)) {
         this.position.y = this.position.y + this.speed
       }
     }
