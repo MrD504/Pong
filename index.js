@@ -2,7 +2,7 @@
   const canvas = document.getElementById("canvas");
   const context = canvas.getContext('2d');
   let gameSpeed = 30;
-  let paddleSpeed = 5;
+  let paddleSpeed = 1;
 
   class ObjXY {
     constructor(x, y) {
@@ -34,7 +34,6 @@
     calculateVelocityY = (paddle) => {
       const MAX_VELOCITY = this.velocityX * 1.25; // cap the speed of the ball
       const deltaY = (this.position.y - (paddle.position.y + paddle.size.y / 2)) * 0.15;
-      console.log(deltaY)
       if (Math.abs(deltaY) > MAX_VELOCITY && this.velocityY < 0) {
         this.velocityY = -MAX_VELOCITY
       } else if (Math.abs(deltaY) > MAX_VELOCITY && this.velocityY > 0) {
@@ -229,10 +228,10 @@
       this.level = 1;
       this.ball = new Ball();
       this.gameSpeed = fps;
-      this.playerPaddle = new Paddle("left");
-      this.computerPaddle = new Paddle("right", computerPaddleSpeed);
-      this.framesPerSecond = 1000 / this.gameSpeed;
       this.computerPaddleSpeed = computerPaddleSpeed;
+      this.playerPaddle = new Paddle("left");
+      this.computerPaddle = new Paddle("right", this.computerPaddleSpeed);
+      this.framesPerSecond = 1000 / this.gameSpeed;
       this.MAX_SCORE = 3;
       this.playerScore = 0;
       this.computerScore = 0;
@@ -251,11 +250,12 @@
     }
 
     nextLevel = () => {
-      this.level++;
+      this.level = this.level + 1;
       this.playerScore = 0;
       this.computerScore = 0;
       this.gameSpeed += 5;
-      this.computerPaddleSpeed += 5;
+      this.computerPaddle.speed *= 2;
+
       this.Reset();
     }
     /**
@@ -274,6 +274,7 @@
         evt.preventDefault();
         canvas.onclick = null;
         // Reset game
+        this.ResetGameSettings();
         this.Reset();
 
         this.ball.velocityX = -15;
@@ -293,14 +294,16 @@
       this.playerScore++;
     };
 
-    Reset = (ball, paddle) => {
-      console.log("resetting")
+    ResetGameSettings = () => {
       // Reset Level Number
       this.level = 1;
 
       // Reset Speeds
       this.gameSpeed = gameSpeed;
       this.computerPaddle.speed = paddleSpeed;
+    }
+
+    Reset = (ball, paddle) => {
 
       // Reset ball position and direction
       if (ball) {
