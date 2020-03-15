@@ -136,12 +136,12 @@
   const Reset = (ball, paddle) => {
 
     // Reset ball position and direction
-    ball.position.x = canvas.width / 2 - (ball.size.x / 2)
-    ball.position.y = canvas.height / 2 - (ball.size.y / 2)
+    ball.position.x = canvas.width / 2 - (ball.size.x / 2);
+    ball.position.y = canvas.height / 2 - (ball.size.y / 2);
     ball.velocityX = -ball.velocityX;
 
     // Reset computer paddle
-    paddle.position.y = (canvas.height / 2) - (paddle.size.y / 2)
+    paddle.position.y = (canvas.height / 2) - (paddle.size.y / 2);
   };
 
   /**
@@ -162,13 +162,24 @@
    */
   const CheckWinLoseConditions = (game, timer) => {
 
+    // if game is won delete self and prompt for new game
+    if (computerScore === MAX_SCORE || playerScore === MAX_SCORE) {
+      clearInterval(timer);
+      window.removeEventListener("mousemove", null)
+      delete (game.ball)
+      delete (game.playerPaddle);
+      delete (game.computerPaddle);
+      game.end(game)
+      return;
+    }
+    
     if (game.ball.position.x > canvas.width - 15) {
       const didBallHitPaddle = CheckBallHitPaddle(game, "computerPaddle");
       if (didBallHitPaddle) {
         game.ball.velocityX = -game.ball.velocityX;
       } else {
         // Increment player score
-        playerScore++;
+        ++playerScore;
         Reset(game.ball, game.computerPaddle);
       }
     }
@@ -178,20 +189,11 @@
       if (didBallHitPaddle) {
         game.ball.velocityX = -game.ball.velocityX;
       } else {
-        computerScore++;
+        ++computerScore;
         Reset(game.ball, game.computerPaddle);
       }
 
-      // if game is won delete self and prompt for new game
-      if (computerScore === MAX_SCORE || playerScore === MAX_SCORE) {
-        clearInterval(timer);
-        window.removeEventListener("mousemove", null)
-        delete (game.ball)
-        delete (game.playerPaddle);
-        delete (game.computerPaddle);
-        game.end(game)
-        return;
-      }
+      
     }
 
     // handle end of game exception
