@@ -2,10 +2,7 @@
   const canvas = document.getElementById("canvas");
   const context = canvas.getContext('2d');
   let gameSpeed = 30;
-  let computerPaddleSpeed = 5;
-  const MAX_SCORE = 3;
-  let playerScore = 0;
-  let computerScore = 0;
+  let paddleSpeed = 5;
 
   class ObjXY {
     constructor(x, y) {
@@ -20,7 +17,7 @@
   class Ball {
     constructor() {
       this.color = "white";
-      this.size = new ObjXY(10,10);
+      this.size = new ObjXY(10, 10);
       this.position = new ObjXY(
         (canvas.width / 2) - (this.size.x / 2),
         (canvas.height / 2) - (this.size.y / 2)
@@ -57,7 +54,7 @@
     HandleComputerMovement = (ball) => {
       const topOfPaddle = this.position.y;
       const bottomOfPaddle = this.position.y + this.size.y;
-    
+
       if (topOfPaddle > ball.position.y && bottomOfPaddle > ball.position.y) {
         this.position.y = this.position.y - this.speed
       } else if (topOfPaddle < ball.position.y && bottomOfPaddle < ball.position.y) {
@@ -89,7 +86,7 @@
     context.fillRect(position.x, position.y, size.x, size.y);
   };
 
-  const PrintScores = (context, score, x, y) => {
+  const PrintMsg = (context, score, x, y) => {
     context.font = "30px Arial";
     context.color = "white";
     context.fillText(score, x, y)
@@ -129,8 +126,8 @@
     Draw(context, game.playerPaddle, game.playerPaddle.position, game.playerPaddle.size);
     Draw(context, game.computerPaddle, game.computerPaddle.position, game.computerPaddle.size);
 
-    PrintScores(context, playerScore, 200, 100);
-    PrintScores(context, computerScore, 550, 100);
+    PrintMsg(context, game.playerScore, 200, 100);
+    PrintMsg(context, game.computerScore, 550, 100);
   };
 
   const Reset = (ball, paddle) => {
@@ -163,23 +160,39 @@
   const CheckWinLoseConditions = (game, timer) => {
 
     // if game is won delete self and prompt for new game
-    if (computerScore === MAX_SCORE || playerScore === MAX_SCORE) {
-      clearInterval(timer);
-      window.removeEventListener("mousemove", null)
-      delete (game.ball)
-      delete (game.playerPaddle);
-      delete (game.computerPaddle);
-      game.end(game)
-      return;
+    if (game.computerScore === game.MAX_SCORE) {
+      game.destroy(timer);
+      PrintMsg(context, 'You Lose!', 350, 200);
+
+      // force end to be on next tick
+      setTimeout(()=>{
+        game.end(game, false)
+        return;
+      })
     }
-    
+
+    if (game.playerScore === game.MAX_SCORE) {
+      game.destroy(timer);
+      PrintMsg(context, 'You Win!', 350, 200);
+
+      // force end to be on next tick
+      setTimeout(() => {
+        game.end(game, true)
+        game.playerScore = 0;
+        game.computerScore = 0;
+        game.gameSpeed += 5;
+        game.computerPaddleSpeed += 5;
+        return;
+      })
+    }
+
     if (game.ball.position.x > canvas.width - 15) {
       const didBallHitPaddle = CheckBallHitPaddle(game, "computerPaddle");
       if (didBallHitPaddle) {
         game.ball.velocityX = -game.ball.velocityX;
       } else {
         // Increment player score
-        ++playerScore;
+        game.IncrementPlayerScore()
         Reset(game.ball, game.computerPaddle);
       }
     }
@@ -189,11 +202,9 @@
       if (didBallHitPaddle) {
         game.ball.velocityX = -game.ball.velocityX;
       } else {
-        ++computerScore;
+        game.IncrementComputerScore();
         Reset(game.ball, game.computerPaddle);
       }
-
-      
     }
 
     // handle end of game exception
@@ -210,43 +221,75 @@
 
   /**
    * Game Constructor
-   * @param {number} speed 
+   * @param {number} fps frames per second 
+   * @param {number} gameSpeed
+   * @param {number} computerPaddleSpeed how fast the computers paddle can react
    */
   class Game {
-      constructor (speed) {
+    constructor(fps, computerPaddleSpeed) {
       this.ball = new Ball();
       this.playerPaddle = new Paddle("left");
       this.computerPaddle = new Paddle("right", computerPaddleSpeed);
-      this.framesPerSecond = speed;
+      this.framesPerSecond = 1000 / fps;
+      this.computerPaddleSpeed = computerPaddleSpeed;
+      this.MAX_SCORE = 3;
+      this.playerScore = 0;
+      this.computerScore = 0;
     };
 
     play = (context) => {
       const startTimer = setInterval(() => {
         clearInterval(startTimer);
         const timer = setInterval(() => {
-    
+
           MoveSprites(this);
           DrawEverything(context, this);
           CheckWinLoseConditions(this, timer);
         }, 1000 / this.framesPerSecond)
       }, 1000)
     }
-    
-    end =  () => {
-      const event = new CustomEvent('end', {})
+
+    /**
+     * @param {boolean} win did player win
+     */
+    end = (win) => {
+      const event = new CustomEvent('end', {
+        gameWon: win
+      })
       dispatchEvent(event);
     };
+
+    IncrementComputerScore = () => {
+      this.computerScore++;
+    };
+
+    IncrementPlayerScore = () => {
+      this.playerScore++;
+    }
+
+    /**
+     * @param {function} timer
+     */
+    destroy = (timer) => {
+      clearInterval(timer);
+      window.removeEventListener("mousemove", null);
+      delete(this)
+      delete (this.ball)
+      delete (this.playerPaddle);
+      delete (this.computerPaddle);
+    }
   };
 
   /**
    * Start a new game
    * @param {number} gameSpeed 
+   * @param {number} cps Computer paddle speed
    */
-  const StartGame = (gameSpeed) => {
+  const StartGame = (gameSpeed, cps) => {
 
     // set game speed
     let level = 1;
-    const game = new Game(gameSpeed);
+    const game = new Game(gameSpeed, cps);
     canvas.addEventListener('mousemove', evt => {
       const mousePos = CalculateMousePosition(evt);
 
@@ -259,19 +302,19 @@
   };
 
   // Listen for end of game and ask user if they want to play again
-  window.addEventListener('end', () => {
+  window.addEventListener('end', (evt) => {
     const answer = confirm('Play Again');
 
     // // if yes start new game but faster and increment level
     if (answer) {
-      playerScore = 0;
-      computerScore = 0;
-      gameSpeed += 5;
-      computerPaddleSpeed += 5;
-      StartGame(gameSpeed)
+      if(evt.won) {
+        gameSpeed += 5;
+        paddleSpeed += 1
+      }
+      StartGame(gameSpeed, paddleSpeed)
     }
   });
 
-  StartGame(gameSpeed);
+  StartGame(gameSpeed, paddleSpeed);
 
 })(document, window)
