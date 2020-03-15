@@ -261,11 +261,28 @@
     /**
      * @param {boolean} win did player win
      */
-    end = (win) => {
-      const event = new CustomEvent('end', {
-        detail: win
-      })
-      dispatchEvent(event);
+    end = () => {
+      this.ball.velocityY = 0;
+      this.ball.velocityX = 0;
+      this.playerScore = 0;
+      this.computerScore = 0;
+      context.clearRect(0, 0, canvas.width, canvas.height);
+
+      PrintMsg(context, "GAME OVER", 300, 200)
+      PrintMsg(context, "Click to Play again", 275, 300);
+      canvas.onclick = (evt) => {
+        evt.preventDefault();
+        canvas.onclick = null;
+        // Reset game
+        this.Reset();
+
+        this.ball.velocityX = -15;
+
+        // play game
+        this.play(context);
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+      }
     };
 
     IncrementComputerScore = () => {
@@ -277,14 +294,14 @@
     };
 
     Reset = (ball, paddle) => {
-
+      console.log("resetting")
       // Reset Level Number
       this.level = 1;
 
       // Reset Speeds
       this.gameSpeed = gameSpeed;
       this.computerPaddle.speed = paddleSpeed;
-      
+
       // Reset ball position and direction
       if (ball) {
         ball.position.x = canvas.width / 2 - (ball.size.x / 2);
@@ -302,11 +319,10 @@
      */
     destroy = (timer) => {
       clearInterval(timer);
-      window.removeEventListener("mousemove", null);
-      delete (this)
-      delete (this.ball)
-      delete (this.playerPaddle);
-      delete (this.computerPaddle);
+      // delete (this)
+      // delete (this.ball)
+      // delete (this.playerPaddle);
+      // delete (this.computerPaddle);
     }
   };
 
@@ -330,15 +346,6 @@
     })
     game.play(context);
   };
-
-  // Listen for end of game and ask user if they want to play again
-  window.addEventListener('end', (evt) => {
-    const answer = confirm('Play Again');
-    // // if yes start new game
-    if (answer) {
-      StartGame(gameSpeed, paddleSpeed)
-    }
-  });
 
   StartGame(gameSpeed, paddleSpeed);
 
