@@ -26,7 +26,7 @@
       this.velocityY = 10;
     };
 
-    calculatePosition = () => {
+    calculateNextPosition = () => {
       this.position.x = this.position.x + this.velocityX;
       this.position.y = this.position.y + this.velocityY;
     }
